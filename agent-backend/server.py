@@ -39,6 +39,10 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s")
 
 app = FastAPI()
 
+from benchwarmer.chat_api import router as chat_router
+
+app.include_router(chat_router)
+
 # Edge Nemotron defaults (DGX Spark / Ollama-compatible API).
 NEMOTRON_BASE_URL = os.environ.get("NEMOTRON_BASE_URL", "http://localhost:11434/api")
 NEMOTRON_MODEL = os.environ.get(
@@ -54,7 +58,11 @@ NEMOTRON_API_KEY = (
 # Add CORS middleware to allow frontend requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.js default port
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

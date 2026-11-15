@@ -85,17 +85,17 @@ The system is driven by a central **Orchestrator Agent** that acts as the conver
 
 | Agent | Role | Model |
 |---|---|---|
-| **Orchestrator** | Central router — understands intent, dispatches tools, manages multi-turn state | Claude Sonnet 4 |
-| **Intake** | Parses NL problem descriptions + research PDFs into structured benchmark configs | Claude Sonnet 4 / Nemotron |
+| **Orchestrator** | Central router — understands intent, dispatches tools, manages multi-turn state | Claude Sonnet 4.6 |
+| **Intake** | Parses NL problem descriptions + research PDFs into structured benchmark configs | Claude Sonnet 4.6 / Nemotron |
 | **Implementation** | Generates `AlgorithmWrapper` subclasses from algorithm specs, smoke-tests in sandbox | Claude Opus 4.6 |
-| **Plot** | Generates matplotlib visualizations from NL requests over benchmark results | Claude Sonnet 4 |
+| **Plot** | Generates matplotlib visualizations from NL requests over benchmark results | Claude Sonnet 4.6 |
 
 ### LLM Backend: Claude vs Nemotron
 
 The intake and orchestration stages are the most token-intensive parts of the pipeline — they process full research papers, lengthy problem descriptions, and maintain multi-turn conversation context. We designed the system to support two LLM backends:
 
 - **Claude Opus 4.6** (Anthropic) — Used for the **Implementation Agent** where code generation accuracy is critical. Opus 4.6 is Anthropic's most capable model for coding tasks, ensuring the generated algorithm implementations are correct, efficient, and faithful to the source papers.
-- **Claude Sonnet 4** (Anthropic) — Used for orchestration, intake, and plot generation where speed and tool-use capability matter more than raw coding power.
+- **Claude Sonnet 4.6** (Anthropic) — Used for orchestration, intake, and plot generation where speed and tool-use capability matter more than raw coding power.
 - **Nemotron-3-Nano-30B** (NVIDIA, open-source) — Deployed locally on **NVIDIA DGX Spark** hardware. As an open-source model, Nemotron eliminates per-token API costs entirely, making it a strong choice for the high-context intake stage where papers and descriptions can consume tens of thousands of tokens per request. Running on DGX Spark also means inference stays on-premises with zero network latency and full data privacy — important when processing unpublished research.
 
 Users can select either backend from the chat UI. This dual-backend design lets teams balance cost, speed, and capability based on their workload.
@@ -144,7 +144,7 @@ The benchwarmer agent has also been deployed on [Fetch.ai's Agentverse](https://
 ### Backend (`agent-backend/`)
 - **Python 3.10+**
 - **FastAPI** + **Uvicorn** — API server with SSE streaming for real-time progress
-- **Anthropic SDK** — Claude Opus 4.6 for code generation, Claude Sonnet 4 for orchestration and intake
+- **Anthropic SDK** — Claude Opus 4.6 for code generation, Claude Sonnet 4.6 for orchestration and intake
 - **NVIDIA Nemotron** — Nemotron-3-Nano-30B deployed on **NVIDIA DGX Spark** as an alternative LLM backend for intake, running locally on DGX hardware for low-latency inference without cloud API costs
 - **Modal** — Serverless sandboxed execution with per-algorithm parallelism
 - **pypdf** — PDF text extraction for research paper parsing
@@ -224,7 +224,6 @@ Benchwarmer.AI/
 │   ├── tailwind.config.js
 │   └── vercel.json                  # SPA rewrite rules for deployment
 │
-├── .env.example                     # Backend environment template
 ├── .gitignore                       # Local credentials, data, and macOS metadata
 ├── SPEC.md                          # Original technical specification
 └── README.md
@@ -272,10 +271,10 @@ pip install -r requirements.txt
 
 ### 3. Configure environment variables
 
-Inside `agent-backend/`, copy the backend environment template from the repository root:
+Inside `agent-backend/`, copy the backend environment template:
 
 ```bash
-cp ../.env.example .env
+cp .env.example .env
 ```
 
 Edit `.env` and add your API key:
@@ -296,7 +295,7 @@ npm ci
 cp .env.example .env
 ```
 
-Set `VITE_API_BASE_URL` to your backend URL when needed. All `VITE_` variables are visible in the browser, so API keys belong in the backend environment.
+For local development, leave `VITE_API_BASE_URL` empty so requests use Vite's `/api` proxy to port 8000. For deployment, set it to your backend URL. All `VITE_` variables are visible in the browser, so API keys belong in the backend environment.
 
 ---
 
@@ -377,18 +376,20 @@ Use Node 20.19+ or 22.12+ (see `frontend-vite/.nvmrc`). The backend (`agent-back
 
 ## Environment Variables
 
-Copy the root `.env.example` to `agent-backend/.env` and fill in the values you need. The backend also includes a matching `agent-backend/.env.example` template.
+Copy `agent-backend/.env.example` to `agent-backend/.env` and fill in the values you need.
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `ANTHROPIC_API_KEY` | **Yes** | Anthropic API key for Claude Opus 4.6 and Sonnet 4 |
+| `ANTHROPIC_API_KEY` | **Yes** | Anthropic API key for Claude Opus 4.6 and Sonnet 4.6 |
+| `ANTHROPIC_MODEL` | No | Claude model for orchestration, intake, and plotting (default: `claude-sonnet-4-6`) |
+| `ANTHROPIC_IMPLEMENTATION_MODEL` | No | Claude model for algorithm generation (default: `claude-opus-4-6`) |
 | `NEMOTRON_BASE_URL` | No | Inference server base URL; configure for your local or hosted Nemotron endpoint |
 | `NEMOTRON_MODEL` | No | Nemotron model identifier (default: `hf.co/unsloth/Nemotron-3-Nano-30B-A3B-GGUF:Q4_K_M`) |
 | `NEMOTRON_API_KEY` | For authenticated endpoints | Nemotron API key; `NVIDIA_API_KEY` or `OPENAI_API_KEY` can also be used |
 | `MODAL_TOKEN_ID` | No | Modal API token ID (for cloud sandbox execution) |
 | `MODAL_TOKEN_SECRET` | No | Modal API token secret |
 
-For the frontend, copy `frontend-vite/.env.example` to `frontend-vite/.env` and set `VITE_API_BASE_URL` to your backend URL. Frontend environment variables are public, so keep API keys in the backend environment.
+For the frontend, copy `frontend-vite/.env.example` to `frontend-vite/.env`. Leave `VITE_API_BASE_URL` empty for local development; set it to your backend URL for deployment. Restart Vite after changing this file. Frontend environment variables are public, so keep API keys in the backend environment.
 
 Real `.env` files and macOS `.DS_Store` / `.DS_STORE` metadata are ignored by Git. Share only `.env.example` templates with empty or placeholder secrets.
 

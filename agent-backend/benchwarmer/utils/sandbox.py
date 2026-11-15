@@ -82,10 +82,10 @@ def execute_plot_code(
         "None": None,
     }
 
-    # Build the restricted namespace (df is the benchmark results DataFrame)
+    # Plot code may transform its input without changing stored benchmark results.
     namespace: dict[str, Any] = {
         "__builtins__": safe_builtins,
-        "df": df,
+        "df": df.copy(deep=True),
         "pd": pd,
         "np": np,
         "plt": plt,

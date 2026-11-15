@@ -14,6 +14,8 @@ import logging
 import os
 from typing import Any, Optional
 
+from benchwarmer.agents.backends import DEFAULT_CLAUDE_MODEL
+
 import pandas as pd
 
 from benchwarmer.utils.sandbox import execute_plot_code
@@ -87,7 +89,7 @@ class PlotAgent:
     def __init__(
         self,
         api_key: str | None = None,
-        model: str = "claude-sonnet-4-20250514",
+        model: str | None = None,
     ) -> None:
         try:
             import anthropic
@@ -104,7 +106,7 @@ class PlotAgent:
             )
 
         self.client = anthropic.Anthropic(api_key=resolved_key)
-        self.model = model
+        self.model = model or os.environ.get("ANTHROPIC_MODEL") or DEFAULT_CLAUDE_MODEL
         self._conversation_history: list[dict[str, str]] = []
         self._df_context: str = ""
 

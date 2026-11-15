@@ -16,6 +16,9 @@ from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_CLAUDE_MODEL = "claude-sonnet-4-6"
+DEFAULT_IMPLEMENTATION_MODEL = "claude-opus-4-6"
+
 
 # ──────────────────────────────────────────────────────────────
 # Fallback parser for local models (Ollama/Nemotron) that emit
@@ -160,7 +163,7 @@ class ClaudeBackend(AbstractLLMBackend):
     def __init__(
         self,
         api_key: str | None = None,
-        model: str = "claude-sonnet-4-20250514",
+        model: str | None = None,
     ) -> None:
         try:
             import anthropic
@@ -177,7 +180,7 @@ class ClaudeBackend(AbstractLLMBackend):
             )
 
         self.client = anthropic.Anthropic(api_key=resolved_key)
-        self.model = model
+        self.model = model or os.environ.get("ANTHROPIC_MODEL") or DEFAULT_CLAUDE_MODEL
 
     def generate(
         self,

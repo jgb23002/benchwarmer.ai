@@ -43,6 +43,12 @@ def init_db():
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS session_titles (
+            session_id TEXT PRIMARY KEY,
+            title TEXT NOT NULL
+        )
+    ''')
     conn.commit()
     conn.close()
 

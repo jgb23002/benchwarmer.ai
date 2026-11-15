@@ -159,7 +159,7 @@ class IntakeAgent:
         self,
         backend=None,
         api_key: str | None = None,
-        model: str = "claude-sonnet-4-20250514",
+        model: str | None = None,
     ) -> None:
         from benchwarmer.agents.backends import ClaudeBackend
 
@@ -344,7 +344,7 @@ class IntakeAgent:
         """
         Build user message content, optionally including PDFs.
 
-        PDFs are converted to text via PyMuPDF for all backends.
+        PDFs are converted to text via pypdf for all backends.
         This avoids needing the Anthropic PDF beta API.
         """
         if not pdf_paths:
@@ -370,22 +370,11 @@ class IntakeAgent:
 
     @staticmethod
     def _extract_pdf_text(path: str) -> str:
-        """Extract text from a PDF file using PyMuPDF."""
+        """Extract text using the PDF dependency installed by requirements.txt."""
         try:
-            import fitz  # PyMuPDF
-        except ImportError:
-            logger.warning(
-                "PyMuPDF not installed. Install with: pip install PyMuPDF"
-            )
-            return ""
+            from pypdf import PdfReader
 
-        try:
-            doc = fitz.open(path)
-            pages = []
-            for page in doc:
-                pages.append(page.get_text())
-            doc.close()
-            return "\n".join(pages)
+            return "\n".join(page.extract_text() or "" for page in PdfReader(path).pages)
         except Exception as e:
             logger.error("Failed to extract text from %s: %s", path, e)
             return ""

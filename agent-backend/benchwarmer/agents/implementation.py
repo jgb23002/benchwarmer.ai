@@ -15,6 +15,8 @@ import os
 import re
 from typing import Any, Optional
 
+from benchwarmer.agents.backends import DEFAULT_IMPLEMENTATION_MODEL
+
 from benchwarmer.utils.modal_sandbox import execute_algorithm_code_modal
 
 logger = logging.getLogger(__name__)
@@ -169,7 +171,7 @@ class ImplementationAgent:
     def __init__(
         self,
         api_key: str | None = None,
-        model: str = "claude-opus-4-6",
+        model: str | None = None,
     ) -> None:
         try:
             import anthropic
@@ -186,7 +188,10 @@ class ImplementationAgent:
             )
 
         self.client = anthropic.Anthropic(api_key=resolved_key)
-        self.model = model
+        self.model = (
+            model or os.environ.get("ANTHROPIC_IMPLEMENTATION_MODEL")
+            or DEFAULT_IMPLEMENTATION_MODEL
+        )
 
     def generate(
         self,
