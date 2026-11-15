@@ -1,0 +1,28 @@
+# Local environment files (keep shareable examples)
+.env
+.env.*
+!.env.example
+
+# Dependencies, build output, and Python caches
+node_modules/
+.venv/
+venv/
+dist/
+build/
+__pycache__/
+*.py[cod]
+
+# Local data and generated runtime output
+benchmarks/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+*.log
+agent-backend/debug_output.txt
+agent-backend/benchmark_results.csv
+agent-backend/plots/
+
+# macOS metadata
+.DS_Store
