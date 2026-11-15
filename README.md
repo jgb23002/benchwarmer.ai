@@ -341,7 +341,7 @@ To use NVIDIA Nemotron as the LLM backend (instead of Claude) for the intake and
 1. Deploy Nemotron-3-Nano-30B on your DGX Spark using [Ollama](https://ollama.com) or any inference server that exposes an OpenAI-compatible API.
 2. Set the endpoint in your `.env`:
    ```env
-   NEMOTRON_URL=http://<your-dgx-spark-ip>:11434/v1
+    NEMOTRON_BASE_URL=http://<your-dgx-spark-ip>:11434/v1
    NEMOTRON_MODEL=hf.co/unsloth/Nemotron-3-Nano-30B-A3B-GGUF:Q4_K_M
    ```
 3. Select **Nemotron** as the LLM backend in the chat UI.
@@ -378,7 +378,7 @@ Create a `.env` file in `agent-backend/` with the following:
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `ANTHROPIC_API_KEY` | **Yes** | Anthropic API key for Claude Opus 4.6 and Sonnet 4 |
-| `NEMOTRON_URL` | No | Nemotron inference endpoint on DGX Spark (e.g., `http://10.19.177.52:11434/v1`) |
+| `NEMOTRON_BASE_URL` | No | Inference server base URL; configure for your local or hosted Nemotron endpoint |
 | `NEMOTRON_MODEL` | No | Nemotron model identifier (default: `hf.co/unsloth/Nemotron-3-Nano-30B-A3B-GGUF:Q4_K_M`) |
 | `MODAL_TOKEN_ID` | No | Modal API token ID (for cloud sandbox execution) |
 | `MODAL_TOKEN_SECRET` | No | Modal API token secret |
