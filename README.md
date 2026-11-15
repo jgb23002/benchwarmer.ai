@@ -147,7 +147,7 @@ The benchwarmer agent has also been deployed on [Fetch.ai's Agentverse](https://
 - **Anthropic SDK** — Claude Opus 4.6 for code generation, Claude Sonnet 4 for orchestration and intake
 - **NVIDIA Nemotron** — Nemotron-3-Nano-30B deployed on **NVIDIA DGX Spark** as an alternative LLM backend for intake, running locally on DGX hardware for low-latency inference without cloud API costs
 - **Modal** — Serverless sandboxed execution with per-algorithm parallelism
-- **PyMuPDF** — PDF text extraction for research paper parsing
+- **pypdf** — PDF text extraction for research paper parsing
 - **Pandas / NumPy / NetworkX / SciPy** — Graph generation, data processing
 - **Matplotlib** — AI-generated comparison charts
 - **Pydantic** — Data validation and configuration models
@@ -224,6 +224,8 @@ Benchwarmer.AI/
 │   ├── tailwind.config.js
 │   └── vercel.json                  # SPA rewrite rules for deployment
 │
+├── .env.example                     # Backend environment template
+├── .gitignore                       # Local credentials, data, and macOS metadata
 ├── SPEC.md                          # Original technical specification
 └── README.md
 ```
@@ -233,7 +235,7 @@ Benchwarmer.AI/
 ## Prerequisites
 
 - **Python 3.10+** — [python.org](https://www.python.org/downloads/)
-- **Node.js 18+** — [nodejs.org](https://nodejs.org/)
+- **Node.js 20.19+ or 22.12+** — [nodejs.org](https://nodejs.org/)
 - **Anthropic API Key** — [console.anthropic.com](https://console.anthropic.com/)
 - *(Optional)* **Modal account** — for parallel cloud sandbox execution ([modal.com](https://modal.com))
 - *(Optional)* **NVIDIA DGX Spark** — for running Nemotron locally as an alternative LLM backend
@@ -245,9 +247,11 @@ Benchwarmer.AI/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/jgb23002/benchwarmer.ai.git
+git clone --branch jiya https://github.com/jgb23002/benchwarmer.ai.git
 cd benchwarmer.ai
 ```
+
+The complete application currently lives on the `jiya` branch.
 
 ### 2. Backend setup
 
@@ -268,10 +272,10 @@ pip install -r requirements.txt
 
 ### 3. Configure environment variables
 
-Inside `agent-backend/`, copy the example env file:
+Inside `agent-backend/`, copy the backend environment template from the repository root:
 
 ```bash
-cp .env.example .env
+cp ../.env.example .env
 ```
 
 Edit `.env` and add your API key:
@@ -367,21 +371,26 @@ No extra Vercel settings are required; just import the repo and deploy.
 
 In the Vercel project, set **Root Directory** to `frontend-vite`. Then install, build, and output will use that folder. The frontend’s `vercel.json` handles SPA rewrites.
 
-Node 20 is recommended (see `frontend-vite/.nvmrc`). The backend (`agent-backend/`) is not deployed to Vercel; run it separately and point the frontend’s API base URL to your backend if needed.
+Use Node 20.19+ or 22.12+ (see `frontend-vite/.nvmrc`). The backend (`agent-backend/`) is not deployed to Vercel; run it separately and point the frontend’s API base URL to your backend if needed.
 
 ---
 
 ## Environment Variables
 
-Create a `.env` file in `agent-backend/` with the following:
+Copy the root `.env.example` to `agent-backend/.env` and fill in the values you need. The backend also includes a matching `agent-backend/.env.example` template.
 
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `ANTHROPIC_API_KEY` | **Yes** | Anthropic API key for Claude Opus 4.6 and Sonnet 4 |
 | `NEMOTRON_BASE_URL` | No | Inference server base URL; configure for your local or hosted Nemotron endpoint |
 | `NEMOTRON_MODEL` | No | Nemotron model identifier (default: `hf.co/unsloth/Nemotron-3-Nano-30B-A3B-GGUF:Q4_K_M`) |
+| `NEMOTRON_API_KEY` | For authenticated endpoints | Nemotron API key; `NVIDIA_API_KEY` or `OPENAI_API_KEY` can also be used |
 | `MODAL_TOKEN_ID` | No | Modal API token ID (for cloud sandbox execution) |
 | `MODAL_TOKEN_SECRET` | No | Modal API token secret |
+
+For the frontend, copy `frontend-vite/.env.example` to `frontend-vite/.env` and set `VITE_API_BASE_URL` to your backend URL. Frontend environment variables are public, so keep API keys in the backend environment.
+
+Real `.env` files and macOS `.DS_Store` / `.DS_STORE` metadata are ignored by Git. Share only `.env.example` templates with empty or placeholder secrets.
 
 ---
 
